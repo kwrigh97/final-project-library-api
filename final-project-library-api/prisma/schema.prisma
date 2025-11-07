@@ -5,11 +5,63 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id    Int    @id @default(autoincrement())
+  name  String
+  email String @unique
+  role  Role
+  loans Loan[]
+}
+
+model Loan {
+  id         Int       @id @default(autoincrement())
+  bookId     Int
+  userId     Int
+  loanedAt   DateTime  @default(now())
+  dueAt      DateTime
+  returnedAt DateTime?
+
+  book Book @relation(fields: [bookId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Book {
+  id            Int    @id @default(autoincrement())
+  title         String
+  isbn          String
+  publishedYear Int
+  copiesTotal   Int
+
+  loans   Loan[]
+  authors BookAuthor[]
+}
+
+model Author {
+  id    Int          @id @default(autoincrement())
+  name  String
+  books BookAuthor[]
+}
+
+model BookAuthor {
+  bookId   Int
+  authorId Int
+
+  book   Book   @relation(fields: [bookId], references: [id])
+  author Author @relation(fields: [authorId], references: [id])
+
+  @@id([bookId, authorId])
+}
+
+enum Role {
+  member
+  librarian
 }
