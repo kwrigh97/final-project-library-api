@@ -12,6 +12,7 @@ export async function getBooks(req, res, next) {
 export async function getBookById(req, res, next) {
   try {
     const book = await bookService.getBookById(parseInt(req.params.id));
+    if (!book) return res.status(404).json({ error: "Book not found" });
     res.json(book);
   } catch (e) {
     next(e);
@@ -20,7 +21,7 @@ export async function getBookById(req, res, next) {
 
 export async function createBook(req, res, next) {
   try {
-    const data = req.body; // includes title, isbn, publishedYear, copiesTotal, authorIds
+    const data = req.body; 
     const book = await bookService.createBook(data);
     res.status(201).json(book);
   } catch (e) {

@@ -1,34 +1,42 @@
-import prisma from "../config/db.js";
+import * as authorRepo from "../repositories/authorRepo.js";
 
 export function getAuthors() {
-  return prisma.author.findMany({
-    include: {
-      books: { include: { book: true } }
-    }
-  });
+  return authorRepo.findAll();
 }
 
-export function getAuthorById(id) {
-  return prisma.author.findUnique({
-    where: { id },
-    include: {
-      books: { include: { book: true } }
-    }
-  });
+export async function getAuthorById(id) {
+  const author = await authorRepo.findById(id);
+  if (!author) {
+    const error = new Error("Author not found");
+    error.status = 404;
+    throw error;
+  }
+  return author;
 }
 
 export function createAuthor(data) {
-  return prisma.author.create({ data });
+  return authorRepo.create(data);
 }
 
-export function updateAuthor(id, data) {
-  return prisma.author.update({
-    where: { id },
-    data
-  });
+export async function updateAuthor(id, data) {
+  // Check if author exists
+  const existing = await authorRepo.findById(id);
+  if (!existing) {
+    const error = new Error("Author not found");
+    error.status = 404;
+    throw error;
+  }
+  
+  return authorRepo.update(id, data);
 }
 
 export async function deleteAuthor(id) {
-  await prisma.bookAuthor.deleteMany({ where: { authorId: id } });
-  return prisma.author.delete({ where: { id } });
+  const existing = await authorRepo.findById(id);
+  if (!existing) {
+    const error = new Error("Author not found");
+    error.status = 404;
+    throw error;
+  }
+  
+  return authorRepo.deleteAuthor(id);
 }
