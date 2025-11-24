@@ -1,0 +1,266 @@
+openapi: 3.0.0
+info:
+  title: Library API (LMS)
+  version: 1.0.0
+  description: API documentation for the Library project
+
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /authors:
+    get:
+      summary: Get all authors
+      tags: [Authors]
+      responses:
+        '200':
+          description: List of authors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Author'
+    post:
+      summary: Create a new author
+      tags: [Authors]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  example: "New Author"
+      responses:
+        '201':
+          description: Author created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Author'
+        '400':
+          description: Validation error
+
+  /authors/{id}:
+    get:
+      summary: Get an author by ID
+      tags: [Authors]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Author ID
+      responses:
+        '200':
+          description: Author found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Author'
+        '400':
+          description: Invalid ID
+        '404':
+          description: Author not found
+    put:
+      summary: Update an author
+      tags: [Authors]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Updated Author Name"
+      responses:
+        '200':
+          description: Author updated
+        '400':
+          description: Validation error
+        '404':
+          description: Author not found
+    delete:
+      summary: Delete an author
+      tags: [Authors]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Author deleted
+        '404':
+          description: Author not found
+
+  /books:
+    get:
+      summary: Get all books
+      tags: [Books]
+      responses:
+        '200':
+          description: List of books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+    post:
+      summary: Create a new book
+      tags: [Books]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, isbn, published_year, copies_total]
+              properties:
+                title:
+                  type: string
+                  example: "The Hobbit"
+                isbn:
+                  type: integer
+                  example: 9780547928227
+                published_year:
+                  type: integer
+                  example: 1937
+                copies_total:
+                  type: integer
+                  example: 10
+                authorIds:
+                  type: array
+                  items:
+                    type: integer
+                  example: [1, 2]
+      responses:
+        '201':
+          description: Book created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          description: Validation error
+
+  /books/{id}:
+    get:
+      summary: Get a book by ID
+      tags: [Books]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Book found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          description: Invalid ID
+        '404':
+          description: Book not found
+    put:
+      summary: Update a book
+      tags: [Books]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                isbn:
+                  type: integer
+                published_year:
+                  type: integer
+                copies_total:
+                  type: integer
+                authorIds:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: Book updated
+        '400':
+          description: Validation error
+        '404':
+          description: Book not found
+    delete:
+      summary: Delete a book
+      tags: [Books]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Book deleted
+        '404':
+          description: Book not found
+
+components:
+  schemas:
+    Author:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "J. K. Rowling"
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "The Hobbit"
+        isbn:
+          type: integer
+          example: 9780547928227
+        published_year:
+          type: integer
+          example: 1937
+        copies_total:
+          type: integer
+          example: 10
+        authorIds:
+          type: array
+          items:
+            type: integer
+          example: [1, 2]
