@@ -6,6 +6,9 @@ info:
 
 servers:
   - url: http://localhost:3000
+    description: Local development
+  - url: https://final-project-library-api-2evm.onrender.com
+    description: Render deployment
 
 paths:
   /authors:
