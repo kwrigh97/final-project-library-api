@@ -1,11 +1,16 @@
 import prisma from '../src/config/db.js';
+import bcrypt from 'bcrypt';
 
 async function main() {
     await prisma.$queryRaw`TRUNCATE "Loan", "BookAuthor", "Book", "Author", "User" RESTART IDENTITY;`;
+    const libPassword = await bcrypt.hash('libpassword123', 10);
+    const memPassword = await bcrypt.hash('memberpassword', 10);
+
     const librarian = await prisma.user.create({
         data: {
             name: 'Alice Johnson',
             email: 'alicej@library.com',
+            passwordHash: libPassword,
             role: 'librarian',
         },
     });
@@ -13,7 +18,8 @@ async function main() {
     const member = await prisma.user.create({
         data: {
             name: 'John Doe',
-            email: 'JohnDoe@member.com',
+            email: 'johndoe@member.com',
+            passwordHash: memPassword,
             role: 'member',
         },
     });

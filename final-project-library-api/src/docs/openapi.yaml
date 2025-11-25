@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Library API (LMS)
-  version: 1.1.1
+  version: 1.2.1
   description: API documentation for the Library Management System
 
 servers:
@@ -9,6 +9,13 @@ servers:
     description: Local development
   - url: https://final-project-library-api-2evm.onrender.com
     description: Render deployment
+
+tags:
+  - name: Authors
+  - name: Books
+  - name: Loans
+  - name: Auth
+  - name: Users
 
 paths:
   /authors:
@@ -37,7 +44,7 @@ paths:
               properties:
                 name:
                   type: string
-                  example: "New Author"
+                  example: "J. R. R. Tolkien"
       responses:
         '201':
           description: Author created
@@ -91,6 +98,10 @@ paths:
       responses:
         '200':
           description: Author updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Author'
         '400':
           description: Validation error
         '404':
@@ -132,7 +143,11 @@ paths:
           application/json:
             schema:
               type: object
-              required: [title, isbn, published_year, copies_total]
+              required:
+                - title
+                - isbn
+                - published_year
+                - copies_total
               properties:
                 title:
                   type: string
@@ -200,12 +215,16 @@ paths:
               properties:
                 title:
                   type: string
+                  example: "Updated Title"
                 isbn:
                   type: string
+                  example: "9780547928227"
                 published_year:
                   type: integer
+                  example: 1937
                 copies_total:
                   type: integer
+                  example: 12
                 authorIds:
                   type: array
                   items:
@@ -213,6 +232,10 @@ paths:
       responses:
         '200':
           description: Book updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
         '400':
           description: Validation error
         '404':
@@ -232,7 +255,346 @@ paths:
         '404':
           description: Book not found
 
+  /loans:
+    get:
+      summary: Get all loans
+      tags: [Loans]
+      responses:
+        '200':
+          description: List of loans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+    post:
+      summary: Create a new loan
+      tags: [Loans]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - book_id
+                - user_id
+                - due_at
+              properties:
+                book_id:
+                  type: integer
+                  example: 1
+                user_id:
+                  type: integer
+                  example: 1
+                due_at:
+                  type: string
+                  format: date-time
+                  example: "2024-01-24T00:00:00.000Z"
+      responses:
+        '201':
+          description: Loan created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '400':
+          description: Validation error
+
+  /loans/{id}:
+    get:
+      summary: Get a loan by ID
+      tags: [Loans]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Loan found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '400':
+          description: Invalid ID
+        '404':
+          description: Loan not found
+    put:
+      summary: Update a loan
+      tags: [Loans]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                due_at:
+                  type: string
+                  format: date-time
+                  example: "2024-02-01T00:00:00.000Z"
+      responses:
+        '200':
+          description: Loan updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '400':
+          description: Validation error
+        '404':
+          description: Loan not found
+    delete:
+      summary: Delete a loan
+      tags: [Loans]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Loan deleted
+        '404':
+          description: Loan not found
+
+  /loans/{id}/return:
+    patch:
+      summary: Return a book for a loan
+      tags: [Loans]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Book returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '400':
+          description: Invalid ID
+        '404':
+          description: Loan not found
+
+  /loans/user/{userId}:
+    get:
+      summary: Get all loans for a user
+      tags: [Loans]
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of loans for the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+        '400':
+          description: Invalid user ID
+
+  /loans/user/{userId}/active:
+    get:
+      summary: Get active loans for a user
+      tags: [Loans]
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of active loans for the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+        '400':
+          description: Invalid user ID
+
+  /auth/register:
+    post:
+      summary: Register a new user
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                  example: "John Doe"
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "secret123"
+      responses:
+        '201':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "jwt-token"
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Validation error
+        '409':
+          description: Email already in use
+
+  /auth/login:
+    post:
+      summary: Login and obtain a JWT
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "secret123"
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "jwt-token"
+        '400':
+          description: Validation error
+        '401':
+          description: Invalid credentials
+
+  /auth/me:
+    get:
+      summary: Get the current authenticated user
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: The current user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+
+  /users:
+    get:
+      summary: Get all users (librarian only)
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /users/{id}:
+    get:
+      summary: Get a user by ID
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: User not found
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     Author:
       type: object
@@ -242,7 +604,18 @@ components:
           example: 1
         name:
           type: string
-          example: "J. K. Rowling"
+          example: "J. R. R. Tolkien"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T12:00:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-10T12:00:00.000Z"
+      required:
+        - id
+        - name
 
     Book:
       type: object
@@ -267,3 +640,85 @@ components:
           items:
             type: integer
           example: [1, 2]
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T12:00:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-10T12:00:00.000Z"
+      required:
+        - id
+        - title
+        - isbn
+        - published_year
+        - copies_total
+
+    Loan:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        book_id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        due_at:
+          type: string
+          format: date-time
+          example: "2024-01-24T00:00:00.000Z"
+        returned_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-10T12:00:00.000Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T12:00:00.000Z"
+      required:
+        - id
+        - book_id
+        - user_id
+        - due_at
+        - created_at
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        role:
+          type: string
+          example: "member"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T12:00:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2024-01-10T12:00:00.000Z"
+      required:
+        - id
+        - name
+        - email
+        - role
+        - createdAt
