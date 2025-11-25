@@ -5,6 +5,7 @@ import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 import bookRoutes from "./routes/bookRoutes.js";
 import authorRoutes from "./routes/authorRoutes.js";
+import loanRoutes from "./routes/loanRoutes.js";
 import authRoutes from './routes/authService.js';
 import userRoutes from './routes/userService.js';
 const app = express();
@@ -16,6 +17,7 @@ app.use(morgan('tiny'));
 app.use(express.json());
 app.use("/books", bookRoutes);
 app.use("/authors", authorRoutes);
+app.use("/loans", loanRoutes);
 
 const swaggerDocument = YAML.load("./src/docs/openapi.yaml");
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
