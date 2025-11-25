@@ -1,11 +1,14 @@
 openapi: 3.0.0
 info:
   title: Library API (LMS)
-  version: 1.0.0
-  description: API documentation for the Library project
+  version: 1.1.1
+  description: API documentation for the Library Management System
 
 servers:
   - url: http://localhost:3000
+    description: Local development
+  - url: https://final-project-library-api-2evm.onrender.com
+    description: Render deployment
 
 paths:
   /authors:
@@ -55,7 +58,6 @@ paths:
           required: true
           schema:
             type: integer
-          description: Author ID
       responses:
         '200':
           description: Author found
@@ -136,8 +138,8 @@ paths:
                   type: string
                   example: "The Hobbit"
                 isbn:
-                  type: integer
-                  example: 9780547928227
+                  type: string
+                  example: "9780547928227"
                 published_year:
                   type: integer
                   example: 1937
@@ -199,7 +201,7 @@ paths:
                 title:
                   type: string
                 isbn:
-                  type: integer
+                  type: string
                 published_year:
                   type: integer
                 copies_total:
@@ -241,6 +243,7 @@ components:
         name:
           type: string
           example: "J. K. Rowling"
+
     Book:
       type: object
       properties:
@@ -251,8 +254,8 @@ components:
           type: string
           example: "The Hobbit"
         isbn:
-          type: integer
-          example: 9780547928227
+          type: string
+          example: "9780547928227"
         published_year:
           type: integer
           example: 1937

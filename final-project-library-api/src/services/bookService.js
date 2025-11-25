@@ -16,27 +16,28 @@ export function getBookById(id) {
 }
 
 export async function createBook(data) {
-  const { authorIds = [], ...rest } = data;
+  const { authorIds = [], published_year, copies_total, ...rest } = data;
 
   const createData = {
     ...rest,
+    publishedYear: published_year,
+    copiesTotal: copies_total,
     authors: {
       create: authorIds.map(aid => ({ authorId: aid }))
     }
   };
+
   return bookRepo.create(createData);
 }
 
 export async function updateBook(id, data) {
-  const existing = await bookRepo.findById(id);
-  if (!existing) {
-    const error = new Error("Book not found");
-    error.status = 404;
-    throw error;
-  }
-  const { authorIds, ...rest } = data;
+  const { authorIds, published_year, copies_total, ...rest } = data;
 
-  const updateData = { ...rest };
+  const updateData = {
+    ...rest,
+    ...(published_year !== undefined && { publishedYear: published_year }),
+    ...(copies_total !== undefined && { copiesTotal: copies_total }),
+  };
 
   if (authorIds) {
     updateData.authors = {
@@ -55,5 +56,12 @@ export async function deleteBook(id) {
     error.status = 404;
     throw error;
   }
-  return bookRepo.deleteBook(id);
+
+  await prisma.bookAuthor.deleteMany({
+    where: { bookId: id }
+  });
+
+  return prisma.book.delete({
+    where: { id }
+  });
 }
