@@ -18,6 +18,8 @@ app.use(express.json());
 app.use("/books", bookRoutes);
 app.use("/authors", authorRoutes);
 app.use("/loans", loanRoutes);
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
 
 const swaggerDocument = YAML.load("./src/docs/openapi.yaml");
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
