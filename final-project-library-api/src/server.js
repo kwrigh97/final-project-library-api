@@ -19,6 +19,14 @@ app.use("/authors", authorRoutes);
 const swaggerDocument = YAML.load("./src/docs/openapi.yaml");
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+app.get("/", (req, res) => {
+  res.json({ status: "ok", message: "LMS API is running" });
+});
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+
 app.use((req, res, next) => {
   const err = new Error('Not Found');
   err.status = 404;
